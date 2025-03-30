@@ -1,0 +1,158 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "suffix": {
+            "type": "string",
+            "metadata": {
+                "description": "All resources' suffix"
+            }
+        },
+        "servicePlanSKU": {
+            "type": "string",
+            "defaultValue": "F1",
+            "allowedValues": [
+                "F1",
+                "B1",
+                "B2",
+                "S1",
+                "P1V2"
+            ],
+            "metadata": {
+                "description": "AppService plan SKU"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "lawName": "[concat('law-vivethere', parameters('suffix'))]",
+        "aisName": "[concat('ias-vivethere', parameters('suffix'))]",
+        "aspName": "[concat('asp-vivethere', parameters('suffix'))]",
+        "webappName": "[concat('webapi-vivethere', parameters('suffix'))]",
+        "diagnosticSettingsName": "[concat('dis-vivethere', parameters('suffix'))]"
+    },
+    "resources": [
+        {
+            "name": "[variables('lawName')]",
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2023-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "features": {
+                    "searchVersion": 1
+                },
+                "retentionInDays": 0
+            }
+        },
+        {
+            "type": "Microsoft.Insights/components",
+            "apiVersion": "2020-02-02",
+            "name": "[variables('aisName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "web",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawName'))]"
+            ],
+            "properties": {
+                "Application_Type": "web",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawName'))]"
+            }
+        },
+        {
+            "name": "[variables('aspName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2024-04-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('servicePlanSKU')]",
+                "capacity": 1
+            },
+            "properties": {
+                "name": "[variables('aspName')]"
+            }
+        },
+        {
+            "name": "[variables('webappName')]",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2024-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('aspName'))]",
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawName'))]",
+                "[resourceId('Microsoft.Insights/components', variables('aisName'))]"
+            ],
+            "properties": {
+                "name": "[variables('webappName')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('aspName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                            "value": "~2"
+                        },
+                        {
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[reference(resourceId('Microsoft.Insights/components', variables('aisName')), '2020-02-02').ConnectionString]"
+                        },
+                        {
+                            "name": "APPINSIGHTS_JAVASCRIPT_ENABLED",
+                            "value": "false"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('Microsoft.Insights/components', variables('aisName')), '2020-02-02').InstrumentationKey]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[variables('diagnosticSettingsName')]",
+            "scope": "[resourceId('Microsoft.Web/sites',variables('webappName'))]",
+            "type": "Microsoft.Insights/diagnosticSettings",
+            "apiVersion": "2021-05-01-preview",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('aspName'))]",
+                "[resourceId('Microsoft.Web/sites', variables('webappName'))]",
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawName'))]",
+                "[resourceId('Microsoft.Insights/components', variables('aisName'))]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawName'))]",
+                //https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-logs/microsoft-web-sites-logs
+                "logs": [
+                    {
+                        "category": "AppServiceAppLogs",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AppServiceConsoleLogs",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AppServiceHTTPLogs",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    }                    
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "webappName": {
+            "type": "string",
+            "value": "[variables('webappName')]"
+        }
+    }
+}

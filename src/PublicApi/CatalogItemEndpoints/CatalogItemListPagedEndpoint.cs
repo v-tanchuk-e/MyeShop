@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Specifications;
@@ -19,11 +20,13 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
 {
     private readonly IUriComposer _uriComposer;
     private readonly IMapper _mapper;
+    private readonly IAppLogger<CatalogItemListPagedEndpoint> _appLogger;
 
-    public CatalogItemListPagedEndpoint(IUriComposer uriComposer, IMapper mapper)
+    public CatalogItemListPagedEndpoint(IUriComposer uriComposer, IMapper mapper, IAppLogger<CatalogItemListPagedEndpoint> appLogger)
     {
         _uriComposer = uriComposer;
         _mapper = mapper;
+        _appLogger = appLogger;
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
@@ -42,8 +45,21 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
         await Task.Delay(1000);
         var response = new ListPagedCatalogItemResponse(request.CorrelationId());
 
+        if(request.PageIndex < 0)
+        {
+            _appLogger.LogWarning("Method {Method}: Invalid PageIndex - {PageIndex}", nameof(CatalogItemListPagedEndpoint), request.PageIndex);
+            throw new Exception("Cannot move further");
+        }
+        if (request.PageSize <= 0)
+        {
+            _appLogger.LogWarning("Method {Method}: Invalid PageSize - {PageSize}", nameof(CatalogItemListPagedEndpoint), request.PageSize);
+            throw new Exception("Cannot move further");
+        }
+
         var filterSpec = new CatalogFilterSpecification(request.CatalogBrandId, request.CatalogTypeId);
         int totalItems = await itemRepository.CountAsync(filterSpec);
+
+        _appLogger.LogInformation("Method {Method}: Catalog items {Count}", nameof(CatalogItemListPagedEndpoint), totalItems);
 
         var pagedSpec = new CatalogFilterPaginatedSpecification(
             skip: request.PageIndex * request.PageSize,

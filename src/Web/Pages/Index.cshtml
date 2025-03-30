@@ -22,6 +22,8 @@
     </div>
 </section>
 <div class="container">
+    <p>Region: @Model.RegionName</p>
+    <p>Web Site Name: @Model.SiteName</p>
     @if (Model.CatalogModel.CatalogItems.Any())
     {
         <partial name="_pagination" for="CatalogModel.PaginationInfo" />

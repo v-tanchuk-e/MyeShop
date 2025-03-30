@@ -12,10 +12,13 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#admin");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Configuration.AddEnvironmentVariables();
 
 var configSection = builder.Configuration.GetRequiredSection(BaseUrlConfiguration.CONFIG_NAME);
 builder.Services.Configure<BaseUrlConfiguration>(configSection);
@@ -37,7 +40,9 @@ builder.Logging.AddConfiguration(builder.Configuration.GetRequiredSection("Loggi
 
 await ClearLocalStorageCache(builder.Services);
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+await app.RunAsync();
 
 static async Task ClearLocalStorageCache(IServiceCollection services)
 {

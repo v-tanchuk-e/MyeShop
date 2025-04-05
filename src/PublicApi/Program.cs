@@ -189,7 +189,7 @@ app.UseSwaggerUI(c =>
 app.MapControllers();
 app.MapEndpoints();
 
-throw new Exception("Cannot move further");
+//throw new Exception("Cannot move further");
 
 app.Logger.LogInformation("LAUNCHING PublicApi");
 app.Logger.LogInformation($"API base {baseUrlConfig?.ApiBase}");

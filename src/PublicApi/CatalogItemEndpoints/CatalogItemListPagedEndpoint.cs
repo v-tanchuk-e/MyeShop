@@ -48,12 +48,12 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
         if(request.PageIndex < 0)
         {
             _appLogger.LogWarning("Method {Method}: Invalid PageIndex - {PageIndex}", nameof(CatalogItemListPagedEndpoint), request.PageIndex);
-            throw new Exception("Cannot move further");
+            //throw new Exception("Cannot move further");
         }
         if (request.PageSize <= 0)
         {
             _appLogger.LogWarning("Method {Method}: Invalid PageSize - {PageSize}", nameof(CatalogItemListPagedEndpoint), request.PageSize);
-            throw new Exception("Cannot move further");
+            //throw new Exception("Cannot move further");
         }
 
         var filterSpec = new CatalogFilterSpecification(request.CatalogBrandId, request.CatalogTypeId);

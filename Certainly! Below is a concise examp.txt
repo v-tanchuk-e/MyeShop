@@ -1,0 +1,66 @@
+Certainly! Below is a concise example of how you can create an Azure Function in C# that writes JSON data to Cosmos DB.
+
+Step 1: Create the Azure Function
+
+First, create a new Azure Function project in Visual Studio or your preferred IDE.
+
+Step 2: Install Necessary Packages
+
+Make sure to install the required NuGet packages:
+
+dotnet add package Microsoft.Azure.WebJobs.Extensions.CosmosDB
+dotnet add package Microsoft.Azure.DocumentDB.Core
+
+Step 3: Define the Function
+
+Here's a simple example of an HTTP-triggered Azure Function that writes JSON data to Cosmos DB:
+
+using System.IO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Documents;
+
+public static class WriteToCosmosDB
+{
+    private static readonly string EndpointUri = "https://<your-cosmos-db-account>.documents.azure.com:443/";
+    private static readonly string PrimaryKey = "<your-primary-key>";
+    private static readonly DocumentClient client = new DocumentClient(new Uri(EndpointUri), PrimaryKey);
+
+    [FunctionName("WriteToCosmosDB")]
+    public static async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+        ILogger log)
+    {
+        log.LogInformation("C# HTTP trigger function processed a request.");
+
+        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+        dynamic data = JsonConvert.DeserializeObject(requestBody);
+
+        if (data == null)
+        {
+            return new BadRequestObjectResult("Please pass a valid JSON in the request body");
+        }
+
+        var collectionUri = UriFactory.CreateDocumentCollectionUri("YourDatabaseName", "YourCollectionName");
+        await client.CreateDocumentAsync(collectionUri, data);
+
+        return new OkObjectResult("Data written to Cosmos DB successfully");
+    }
+}
+
+Step 4: Configure Cosmos DB Connection
+
+Replace <your-cosmos-db-account> and <your-primary-key> with your actual Cosmos DB account URI and primary key. Also, update "YourDatabaseName" and "YourCollectionName" with your database and collection names.
+
+Step 5: Deploy and Test
+
+Deploy your Azure Function to Azure and test it by sending a POST request with JSON data to the function's endpoint.
+
+Summary
+
+This example demonstrates how to create an Azure Function in C# that writes JSON data to Cosmos DB. It includes setting up the function, installing necessary packages, defining the function, configuring the Cosmos DB connection, and deploying the function.

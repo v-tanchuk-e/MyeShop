@@ -23,6 +23,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddConsole();
 builder.Configuration.AddEnvironmentVariables();
 
+Microsoft.eShopWeb.Infrastructure.Dependencies.ConfigureServices(builder.Configuration, builder.Services);
+
+/*
 if (builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Docker" || (builder.Configuration["UseOnlyInMemoryDatabase"] ?? "")=="true" ){
     // Configure SQL Server (local)
     Microsoft.eShopWeb.Infrastructure.Dependencies.ConfigureServices(builder.Configuration, builder.Services);
@@ -42,6 +45,7 @@ else{
         options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure());
     });
 }
+*/
 
 builder.Services.AddCookieSettings();
 

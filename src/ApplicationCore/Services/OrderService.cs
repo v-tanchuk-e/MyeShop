@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
@@ -6,6 +9,7 @@ using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Specifications;
+using System.Text.Json;
 
 namespace Microsoft.eShopWeb.ApplicationCore.Services;
 
@@ -49,5 +53,27 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         await _orderRepository.AddAsync(order);
+        await SendToDelivery(order);
     }
+
+    async Task SendToDelivery(Order order)
+    {
+        var client = new HttpClient();
+        var json = JsonSerializer.Serialize(order);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("https://orderitemsreserver320250422090444.azurewebsites.net/api/Function2?", content);
+        //"code=DyyPxQErUqF-nm7iYPbxWuPL6Bcs2EWecp63wq3P_BJZAzFu7NOGsQ==", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Data sent successfully!");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.StatusCode}");
+        }
+    }
+
+
 }

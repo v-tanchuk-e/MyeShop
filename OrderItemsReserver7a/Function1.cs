@@ -61,6 +61,7 @@ namespace OrderItemsReserver7a
                     await AppendToBlob(tstream);
                 }
                 responseMessage += " You order was Saved in the Blob.";
+               await  SendEmail(orderstr);
 
                 //return new OkObjectResult(responseMessage);
             }
@@ -96,5 +97,23 @@ namespace OrderItemsReserver7a
                 bytesLeft -= bytesRead;
             }
         }
+
+        static async Task SendEmail(string order)
+        {
+            var client = new HttpClient();
+            // requires using System.Text.Json;
+            string jsonData = JsonConvert.SerializeObject(new
+            {
+                Message = order
+            });
+
+            HttpResponseMessage result = await client.PostAsync(
+                "https://prod-16.canadacentral.logic.azure.com:443/workflows/63e731bdbf8e4d69aed18c908721c9e6/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=m6ReRtzLyNno8zHNiCriqVw7jmmnDx7DGzia1jWc5w8",
+                new StringContent(jsonData, Encoding.UTF8, "application/json"));
+
+            var statusCode = result.StatusCode.ToString();
+        }
+
+
     }
 }

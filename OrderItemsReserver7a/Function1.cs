@@ -137,12 +137,12 @@ namespace OrderItemsReserver7a
                 }
                 else
                 {
-                    _logger.LogInformation((e.Message);
+                    _logger.LogInformation(e.Message);
                 }
             }
             catch(Exception e)
             {
-                _logger.LogInformation((e.Message);
+                _logger.LogInformation(e.Message);
             }
             finally
             {

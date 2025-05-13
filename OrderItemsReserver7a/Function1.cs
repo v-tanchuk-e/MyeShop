@@ -9,6 +9,9 @@ using Newtonsoft.Json;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Blobs;
 using System.Text;
+using Azure.Storage.Blobs.Models;
+using Azure;
+using System.Net;
 
 namespace OrderItemsReserver7a
 {
@@ -55,19 +58,29 @@ namespace OrderItemsReserver7a
                 }
                 orderstr += "\r\n";
 
+                int attempts = 1;
                 byte[] tbytes = Encoding.UTF8.GetBytes(orderstr);
                 using (MemoryStream tstream = new MemoryStream(tbytes))
                 {
-                    await AppendToBlob(tstream);
+                    for (; attempts <= 3; attempts++)
+                    {
+                        if (await AppendToBlob(tstream)) break;
+                        await Task.Delay(3000);
+                    }
                 }
-                responseMessage += " You order was Saved in the Blob.";
-               await  SendEmail(orderstr);
+                if (attempts > 3)
+                {
+                    responseMessage += " You order was not Saved in the Blob.";
+                    await SendEmail(orderstr);
+                }
+                else responseMessage += $" You order was Saved in the Blob. {attempts} atttempt(s)";
 
                 //return new OkObjectResult(responseMessage);
+                _logger.LogInformation(responseMessage);
             }
             catch (Exception e)
             {
-                //return new BadRequestObjectResult("FAILURE! \\r\\n" + e.ToString());
+                _logger.LogInformation("FAILURE! " + e.ToString());
             }
 
             // Complete the message
@@ -75,27 +88,67 @@ namespace OrderItemsReserver7a
         }
 
 
-        static async Task AppendToBlob(MemoryStream logEntryStream)
+        async Task<bool> AppendToBlob(MemoryStream logEntryStream)
         {
-            string conn = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-            BlobContainerClient containerClient = new BlobContainerClient(conn, "eshoporders");
-            AppendBlobClient appendBlobClient = containerClient.GetAppendBlobClient("Orders.txt");
-
-            appendBlobClient.CreateIfNotExists();
-
-            int maxBlockSize = appendBlobClient.AppendBlobMaxAppendBlockBytes;
-            long bytesLeft = logEntryStream.Length;
-            byte[] buffer = new byte[maxBlockSize];
-            while (bytesLeft > 0)
+            BlobLeaseClient blobLeaseClient = null;
+            bool res = false;
+            try
             {
-                int blockSize = (int)Math.Min(bytesLeft, maxBlockSize);
-                int bytesRead = await logEntryStream.ReadAsync(buffer, 0, blockSize);
-                using (MemoryStream memoryStream = new MemoryStream(buffer, 0, bytesRead))
+                string conn = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+                BlobContainerClient containerClient = new BlobContainerClient(conn, "eshoporders");
+                AppendBlobClient appendBlobClient = containerClient.GetAppendBlobClient("Orders.txt");
+                blobLeaseClient = appendBlobClient.GetBlobLeaseClient();
+
+                appendBlobClient.CreateIfNotExists();
+
+                BlobLease blobLease = await blobLeaseClient.AcquireAsync(TimeSpan.FromSeconds(15));
+                Console.WriteLine("Blob lease acquired. LeaseId = {0}", blobLease.LeaseId);
+
+                // Set the request condition to include the lease ID.
+                AppendBlobAppendBlockOptions blobOptions = new AppendBlobAppendBlockOptions()
                 {
-                    await appendBlobClient.AppendBlockAsync(memoryStream);
+                    Conditions = new AppendBlobRequestConditions()
+                    {
+                        LeaseId = blobLease.LeaseId
+                    }
+                };
+
+                int maxBlockSize = appendBlobClient.AppendBlobMaxAppendBlockBytes;
+                long bytesLeft = logEntryStream.Length;
+                byte[] buffer = new byte[maxBlockSize];
+                while (bytesLeft > 0)
+                {
+                    int blockSize = (int)Math.Min(bytesLeft, maxBlockSize);
+                    int bytesRead = await logEntryStream.ReadAsync(buffer, 0, blockSize);
+                    using (MemoryStream memoryStream = new MemoryStream(buffer, 0, bytesRead))
+                    {
+                        await appendBlobClient.AppendBlockAsync(memoryStream, blobOptions);
+                    }
+                    bytesLeft -= bytesRead;
                 }
-                bytesLeft -= bytesRead;
+                res = true;
             }
+            catch (RequestFailedException e)
+            {
+                if (e.Status == (int)HttpStatusCode.PreconditionFailed)
+                {
+                    _logger.LogInformation(
+                        @"Precondition failure. The lease ID was not provided.");
+                }
+                else
+                {
+                    _logger.LogInformation((e.Message);
+                }
+            }
+            catch(Exception e)
+            {
+                _logger.LogInformation((e.Message);
+            }
+            finally
+            {
+                if(blobLeaseClient != null)  await blobLeaseClient.ReleaseAsync();
+            }
+            return res;
         }
 
         static async Task SendEmail(string order)

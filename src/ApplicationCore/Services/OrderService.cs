@@ -10,6 +10,8 @@ using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Specifications;
 using System.Text.Json;
+using Azure.Messaging.ServiceBus;
+using System.Reflection;
 
 namespace Microsoft.eShopWeb.ApplicationCore.Services;
 
@@ -53,7 +55,7 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         await _orderRepository.AddAsync(order);
-        await SendToDelivery(order);
+        await SendToDeliveryQueue(order);
     }
 
     async Task SendToDelivery(Order order)
@@ -72,6 +74,40 @@ public class OrderService : IOrderService
         else
         {
             Console.WriteLine($"Error: {response.StatusCode}");
+        }
+    }
+
+    private const string connectionString = "Endpoint=sb://shoporders7.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=zcJJ+xPjdnS5fAIv6vP3yqhvEptBazF4a+ASbPUe0BU=";
+    private const string queueName = "eshop";
+
+    async Task SendToDeliveryQueue(Order order)
+    {
+        // Create a Service Bus client
+        await using var client = new ServiceBusClient(connectionString);
+
+        // Create a sender for the queue
+        ServiceBusSender sender = client.CreateSender(queueName);
+
+        try
+        {
+            // Create a message to send
+            string json = JsonSerializer.Serialize(order);
+            ServiceBusMessage message = new ServiceBusMessage(json);
+            message.ContentType = "application/json";
+
+            // Send the message
+            await sender.SendMessageAsync(message);
+
+            Console.WriteLine("Message sent successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending message: {ex.Message}");
+        }
+        finally
+        {
+            // Dispose of the sender
+            await sender.DisposeAsync();
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using Ardalis.ListStartupServices;
 using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using BlazorAdmin;
 using BlazorAdmin.Services;
 using Blazored.LocalStorage;
@@ -18,6 +19,7 @@ using Microsoft.eShopWeb.Web;
 using Microsoft.eShopWeb.Web.Configuration;
 using Microsoft.eShopWeb.Web.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddConsole();

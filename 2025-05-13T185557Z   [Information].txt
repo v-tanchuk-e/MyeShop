@@ -1,0 +1,80 @@
+2025-05-13T18:55:57Z   [Information]   Executing 'Functions.Function1' (Reason='(null)', Id=34a62c26-b090-4e03-bc0e-c48404f38509)
+2025-05-13T18:55:57Z   [Information]   Trigger Details: MessageId: 5e62a18951b742b69b282a4b717494ca, SequenceNumber: 44, DeliveryCount: 1, EnqueuedTimeUtc: 2025-05-13T18:55:56.5600000+00:00, LockedUntilUtc: 2025-05-13T18:56:56.5760000+00:00, SessionId: (null)
+2025-05-13T18:55:57Z   [Information]   Message ID: 5e62a18951b742b69b282a4b717494ca
+2025-05-13T18:55:57Z   [Information]   Message Body: {"BuyerId":"admin@microsoft.com","OrderDate":"2025-05-13T18:55:56.4181673+00:00","ShipToAddress":{"Street":"123 Main St.","City":"Kent","State":"OH","Country":"United States","ZipCode":"44240"},"OrderItems":[{"ItemOrdered":{"CatalogItemId":2,"ProductName":".NET Black \u0026 White Mug","PictureUri":"/images/products/2.png"},"UnitPrice":8.50,"Units":1,"Id":45}],"Id":41}
+2025-05-13T18:55:57Z   [Information]   Message Content-Type: application/json
+2025-05-13T18:55:57Z   [Information]   ATTEMPT 1
+2025-05-13T18:55:57Z   [Information]   The value for one of the HTTP headers is not in the correct format.
+RequestId:493c66da-301e-005a-5238-c4a2d4000000
+Time:2025-05-13T18:55:56.6431654Z
+Status: 400 (The value for one of the HTTP headers is not in the correct format.)
+ErrorCode: InvalidHeaderValue
+
+Additional Information:
+HeaderName: x-ms-lease-duration
+HeaderValue: 5
+
+Content:
+﻿<?xml version="1.0" encoding="utf-8"?><Error><Code>InvalidHeaderValue</Code><Message>The value for one of the HTTP headers is not in the correct format.
+RequestId:493c66da-301e-005a-5238-c4a2d4000000
+Time:2025-05-13T18:55:56.6431654Z</Message><HeaderName>x-ms-lease-duration</HeaderName><HeaderValue>5</HeaderValue></Error>
+
+Headers:
+Server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
+x-ms-request-id: 493c66da-301e-005a-5238-c4a2d4000000
+x-ms-client-request-id: 8b3ed77e-1382-411e-9d86-ffe9f41789b2
+x-ms-version: 2025-05-05
+x-ms-error-code: InvalidHeaderValue
+Date: Tue, 13 May 2025 18:55:56 GMT
+Content-Length: 326
+Content-Type: application/xml
+2025-05-13T18:56:00Z   [Information]   ATTEMPT 2
+2025-05-13T18:56:00Z   [Information]   The value for one of the HTTP headers is not in the correct format.
+RequestId:493c6ba8-301e-005a-2a38-c4a2d4000000
+Time:2025-05-13T18:55:59.6426671Z
+Status: 400 (The value for one of the HTTP headers is not in the correct format.)
+ErrorCode: InvalidHeaderValue
+
+Additional Information:
+HeaderName: x-ms-lease-duration
+HeaderValue: 5
+
+Content:
+﻿<?xml version="1.0" encoding="utf-8"?><Error><Code>InvalidHeaderValue</Code><Message>The value for one of the HTTP headers is not in the correct format.
+RequestId:493c6ba8-301e-005a-2a38-c4a2d4000000
+Time:2025-05-13T18:55:59.6426671Z</Message><HeaderName>x-ms-lease-duration</HeaderName><HeaderValue>5</HeaderValue></Error>
+
+Headers:
+Server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
+x-ms-request-id: 493c6ba8-301e-005a-2a38-c4a2d4000000
+x-ms-client-request-id: 03f05636-3b08-407d-862f-310a64573c4a
+x-ms-version: 2025-05-05
+x-ms-error-code: InvalidHeaderValue
+Date: Tue, 13 May 2025 18:55:59 GMT
+Content-Length: 326
+Content-Type: application/xml
+2025-05-13T18:56:03Z   [Information]   ATTEMPT 3
+2025-05-13T18:56:03Z   [Information]   The value for one of the HTTP headers is not in the correct format.
+RequestId:493c70dc-301e-005a-5c38-c4a2d4000000
+Time:2025-05-13T18:56:02.6469707Z
+Status: 400 (The value for one of the HTTP headers is not in the correct format.)
+ErrorCode: InvalidHeaderValue
+
+Additional Information:
+HeaderName: x-ms-lease-duration
+HeaderValue: 5
+
+Content:
+﻿<?xml version="1.0" encoding="utf-8"?><Error><Code>InvalidHeaderValue</Code><Message>The value for one of the HTTP headers is not in the correct format.
+RequestId:493c70dc-301e-005a-5c38-c4a2d4000000
+Time:2025-05-13T18:56:02.6469707Z</Message><HeaderName>x-ms-lease-duration</HeaderName><HeaderValue>5</HeaderValue></Error>
+
+Headers:
+Server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
+x-ms-request-id: 493c70dc-301e-005a-5c38-c4a2d4000000
+x-ms-client-request-id: 036847ef-9984-4e43-8d30-a28159177e94
+x-ms-version: 2025-05-05
+x-ms-error-code: InvalidHeaderValue
+Date: Tue, 13 May 2025 18:56:02 GMT
+Content-Length: 326
+Content-Type: application/xml

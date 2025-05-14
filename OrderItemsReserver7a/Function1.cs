@@ -64,6 +64,7 @@ namespace OrderItemsReserver7a
                 {
                     for (; attempts <= 3; attempts++)
                     {
+                        _logger.LogInformation($"ATTEMPT {attempts}");
                         if (await AppendToBlob(tstream)) break;
                         await Task.Delay(3000);
                     }
@@ -90,7 +91,42 @@ namespace OrderItemsReserver7a
 
         async Task<bool> AppendToBlob(MemoryStream logEntryStream)
         {
+            bool res = false;
+            try
+            {
+                string conn = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+                BlobContainerClient containerClient = new BlobContainerClient(conn, "eshoporders");
+                AppendBlobClient appendBlobClient = containerClient.GetAppendBlobClient("Orders.txt");
+
+                appendBlobClient.CreateIfNotExists();
+             
+
+                int maxBlockSize = appendBlobClient.AppendBlobMaxAppendBlockBytes;
+                long bytesLeft = logEntryStream.Length;
+                byte[] buffer = new byte[maxBlockSize];
+                while (bytesLeft > 0)
+                {
+                    int blockSize = (int)Math.Min(bytesLeft, maxBlockSize);
+                    int bytesRead = await logEntryStream.ReadAsync(buffer, 0, blockSize);
+                    using (MemoryStream memoryStream = new MemoryStream(buffer, 0, bytesRead))
+                    {
+                        await appendBlobClient.AppendBlockAsync(memoryStream);
+                    }
+                    bytesLeft -= bytesRead;
+                }
+                res = true;
+            }
+            catch(Exception e)
+            {
+                _logger.LogInformation(e.Message);
+            }
+            return res;
+        }
+
+        async Task<bool> AppendToBlob2(MemoryStream logEntryStream)
+        {
             BlobLeaseClient blobLeaseClient = null;
+            bool hasLease = false;
             bool res = false;
             try
             {
@@ -101,8 +137,10 @@ namespace OrderItemsReserver7a
 
                 appendBlobClient.CreateIfNotExists();
 
-                BlobLease blobLease = await blobLeaseClient.AcquireAsync(TimeSpan.FromSeconds(15));
-                Console.WriteLine("Blob lease acquired. LeaseId = {0}", blobLease.LeaseId);
+                _logger.LogInformation("AcquireAsync");
+                BlobLease blobLease = await blobLeaseClient.AcquireAsync(TimeSpan.FromSeconds(5));
+                hasLease = true;
+                _logger.LogInformation("Blob lease acquired. LeaseId = {0}", blobLease.LeaseId);
 
                 // Set the request condition to include the lease ID.
                 AppendBlobAppendBlockOptions blobOptions = new AppendBlobAppendBlockOptions()
@@ -140,13 +178,17 @@ namespace OrderItemsReserver7a
                     _logger.LogInformation(e.Message);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogInformation(e.Message);
             }
             finally
             {
-                if(blobLeaseClient != null)  await blobLeaseClient.ReleaseAsync();
+                if (blobLeaseClient != null && hasLease)
+                {
+                    _logger.LogInformation("ReleaseAsync");
+                    await blobLeaseClient.ReleaseAsync();
+                }
             }
             return res;
         }

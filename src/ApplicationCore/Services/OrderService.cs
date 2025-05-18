@@ -55,7 +55,7 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         await _orderRepository.AddAsync(order);
-        await SendToDeliveryQueue(order);
+       // await SendToDeliveryQueue(order);
     }
 
     async Task SendToDelivery(Order order)

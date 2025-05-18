@@ -1,0 +1,17 @@
+https://learn.microsoft.com/en-us/azure/container-registry/container-registry-quickstart-task-cli#code-try-3
+
+az group create --name task08group --location canadacentral
+
+{                                                                
+  "id": "/subscriptions/d035d46f-a4d7-4cce-a57d-be520ed3f289/resourceGroups/task08group",
+  "location": "canadacentral",
+  "managedBy": null,
+  "name": "task08group",
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "tags": null,
+  "type": "Microsoft.Resources/resourceGroups"
+}
+
+az acr create --name registryweb1 --resource-group task08group --sku Basic

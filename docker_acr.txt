@@ -1,0 +1,22 @@
+cd /d C:\Users\vsevolod_tanchuk\source\repos\eShopOnWeb-main
+
+docker build --pull -t ehopcontreg-d9hvbqhfcvcaehh3.azurecr.io/eshoppubapi -f src/PublicApi/Dockerfile .
+docker build --pull -t ehopcontreg-d9hvbqhfcvcaehh3.azurecr.io/web -f src/Web/Dockerfile .
+
+az acr build --image ehopcontreg-d9hvbqhfcvcaehh3.azurecr.io/web --registry ehopcontreg --file src/Web/Dockerfile . 
+az acr build --image ehopcontreg-d9hvbqhfcvcaehh3.azurecr.io/eshoppubapi --registry ehopcontreg --file src/PublicApi/Dockerfile . 
+
+az login
+ login --name ehopcontreg
+
+docker push ehopcontreg-d9hvbqhfcvcaehh3.azurecr.io/eshoppubapi
+docker push ehopcontreg-d9hvbqhfcvcaehh3.azurecr.io/web
+
+az acr repository list --name ehopcontreg-d9hvbqhfcvcaehh3.azurecr.io --output table
+
+"CustomSettings__MySpecificSetting".
+
+  "CatalogConnection": "Server=tcp:eshop8.database.windows.net,1433;Initial Catalog=CatalogDB;Persist Security Info=False;User ID=eshopadmin8;Password=qWoE3381_UuY_sAwtsWE_17aAu273U8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+ 
+
+az acr build --pull -t ehopcontreg-d9hvbqhfcvcaehh3.azurecr.io/web -f src/Web/Dockerfile .

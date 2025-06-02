@@ -15,12 +15,12 @@ using Newtonsoft.Json.Converters;
 
 namespace OrderItemsReserver3
 {
-    public class Function2
+    public class DeliveryOrder
     {
-        private readonly ILogger<Function2> _logger;
+        private readonly ILogger<DeliveryOrder> _logger;
 
        
-        public Function2(ILogger<Function2> logger)
+        public DeliveryOrder(ILogger<DeliveryOrder> logger)
         {
             _logger = logger;
         }
@@ -117,7 +117,7 @@ namespace OrderItemsReserver3
 
                 */
 
-        [Function("Function2")]
+        [Function("SaveDeliveryOrder")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
             string requestBody = string.Empty;
@@ -135,9 +135,10 @@ namespace OrderItemsReserver3
                     Database _database;
                     Container _container;
 
-                    _cosmosClient = new CosmosClient("https://task5cosmos.documents.azure.com:443/", "vnMIwBimyxuuICazUhEQzDzjRp2Llyapuyki4U5b8qsppPCMhDBdXhaHphno19C3tASzUnhkQS04ACDbRs9keQ==");
+                    _cosmosClient = new CosmosClient("https://taskfincosmos.documents.azure.com:443/",
+                        "DHP9F8RW2hwngkfApQr1V0jdBaJctSZYiogUFhwDkpkwYwoYWvOjcjt3IMybuqY3LSKBVEhAkpqtACDbOD8zvA==");
                     _database = _cosmosClient.GetDatabase("eShopDelivery");
-                    _container = _database.GetContainer("Orders5");
+                    _container = _database.GetContainer("Orders");
 
                     //dynamic data = JsonConvert.DeserializeObject(requestBody);
                     dynamic data = JsonConvert.DeserializeObject<ExpandoObject>(requestBody, new ExpandoObjectConverter());

@@ -55,7 +55,8 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         await _orderRepository.AddAsync(order);
-        await SendToDeliveryQueue(order);
+        await SendToReserveQueue(order);
+        await SendToDelivery(order);
     }
 
     async Task SendToDelivery(Order order)
@@ -64,7 +65,7 @@ public class OrderService : IOrderService
         var json = JsonSerializer.Serialize(order);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await client.PostAsync("https://orderitemsreserver320250422090444.azurewebsites.net/api/Function2?", content);
+        var response = await client.PostAsync("https://orderitemsreserver320250602193807.azurewebsites.net/api/SaveDeliveryOrder?", content);
         //"code=DyyPxQErUqF-nm7iYPbxWuPL6Bcs2EWecp63wq3P_BJZAzFu7NOGsQ==", content);
 
         if (response.IsSuccessStatusCode)
@@ -80,7 +81,7 @@ public class OrderService : IOrderService
     private const string connectionString = "Endpoint=sb://eshopfin.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=hhnS4+TiS1T19ymJjW57JjbTb9R2QZ4nd+ASbEU+6dY=";
     private const string queueName = "shopordersbus";
 
-    async Task SendToDeliveryQueue(Order order)
+    async Task SendToReserveQueue(Order order)
     {
         // Create a Service Bus client
         await using var client = new ServiceBusClient(connectionString);

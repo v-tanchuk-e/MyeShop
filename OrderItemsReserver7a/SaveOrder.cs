@@ -15,18 +15,18 @@ using System.Net;
 
 namespace OrderItemsReserver7a
 {
-    public class Function1
+    public class SaveOrder
     {
-        private readonly ILogger<Function1> _logger;
+        private readonly ILogger<SaveOrder> _logger;
 
-        public Function1(ILogger<Function1> logger)
+        public SaveOrder(ILogger<SaveOrder> logger)
         {
             _logger = logger;
         }
 
-        [Function(nameof(Function1))]
+        [Function(nameof(SaveOrder))]
         public async Task Run(
-            [ServiceBusTrigger("eshop", Connection = "ShopOrdersBus")]
+            [ServiceBusTrigger("shopordersbus", Connection = "BusNamespace")]
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
@@ -203,7 +203,7 @@ namespace OrderItemsReserver7a
             });
 
             HttpResponseMessage result = await client.PostAsync(
-                "https://prod-16.canadacentral.logic.azure.com:443/workflows/63e731bdbf8e4d69aed18c908721c9e6/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=m6ReRtzLyNno8zHNiCriqVw7jmmnDx7DGzia1jWc5w8",
+                "https://prod-06.canadacentral.logic.azure.com:443/workflows/b36e6055643845d49697347e7c4da832/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=Zaxa3XeMH0y5Uo-3E5FJw1qLXlwAD4h8B0GD7-CNMTs",
                 new StringContent(jsonData, Encoding.UTF8, "application/json"));
 
             var statusCode = result.StatusCode.ToString();

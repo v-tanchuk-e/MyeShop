@@ -55,7 +55,7 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         await _orderRepository.AddAsync(order);
-       // await SendToDeliveryQueue(order);
+        await SendToDeliveryQueue(order);
     }
 
     async Task SendToDelivery(Order order)
@@ -77,8 +77,8 @@ public class OrderService : IOrderService
         }
     }
 
-    private const string connectionString = "Endpoint=sb://shoporders7.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=zcJJ+xPjdnS5fAIv6vP3yqhvEptBazF4a+ASbPUe0BU=";
-    private const string queueName = "eshop";
+    private const string connectionString = "Endpoint=sb://eshopfin.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=hhnS4+TiS1T19ymJjW57JjbTb9R2QZ4nd+ASbEU+6dY=";
+    private const string queueName = "shopordersbus";
 
     async Task SendToDeliveryQueue(Order order)
     {

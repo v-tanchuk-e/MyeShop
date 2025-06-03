@@ -135,8 +135,12 @@ namespace OrderItemsReserver3
                     Database _database;
                     Container _container;
 
-                    _cosmosClient = new CosmosClient("https://taskfincosmos.documents.azure.com:443/",
-                        "DHP9F8RW2hwngkfApQr1V0jdBaJctSZYiogUFhwDkpkwYwoYWvOjcjt3IMybuqY3LSKBVEhAkpqtACDbOD8zvA==");
+                    string cosmosAccountEndpoint = Environment.GetEnvironmentVariable("CosmosAccount");
+                    string cosmosToken = Environment.GetEnvironmentVariable("CosmosToken");
+
+                    //_cosmosClient = new CosmosClient("https://taskfincosmos.documents.azure.com:443/",
+                    //"DHP9F8RW2hwngkfApQr1V0jdBaJctSZYiogUFhwDkpkwYwoYWvOjcjt3IMybuqY3LSKBVEhAkpqtACDbOD8zvA==");
+                    _cosmosClient = new CosmosClient(cosmosAccountEndpoint, cosmosToken);
                     _database = _cosmosClient.GetDatabase("eShopDelivery");
                     _container = _database.GetContainer("Orders");
 

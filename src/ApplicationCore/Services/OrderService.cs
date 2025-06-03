@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
+using Microsoft.Extensions.Configuration;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
@@ -21,16 +22,19 @@ public class OrderService : IOrderService
     private readonly IUriComposer _uriComposer;
     private readonly IRepository<Basket> _basketRepository;
     private readonly IRepository<CatalogItem> _itemRepository;
+    private readonly IConfiguration _configuration;
 
     public OrderService(IRepository<Basket> basketRepository,
         IRepository<CatalogItem> itemRepository,
         IRepository<Order> orderRepository,
-        IUriComposer uriComposer)
+        IUriComposer uriComposer,
+        IConfiguration configuration)
     {
         _orderRepository = orderRepository;
         _uriComposer = uriComposer;
         _basketRepository = basketRepository;
         _itemRepository = itemRepository;
+        _configuration = configuration;
     }
 
     public async Task CreateOrderAsync(int basketId, Address shippingAddress)
@@ -65,8 +69,10 @@ public class OrderService : IOrderService
         var json = JsonSerializer.Serialize(order);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await client.PostAsync("https://orderitemsreserver320250602193807.azurewebsites.net/api/SaveDeliveryOrder?", content);
-        //"code=DyyPxQErUqF-nm7iYPbxWuPL6Bcs2EWecp63wq3P_BJZAzFu7NOGsQ==", content);
+        //var response = await client.PostAsync("https://orderitemsreserver320250602193807.azurewebsites.net/api/SaveDeliveryOrder?", content);
+        Console.WriteLine($"DeliveryURL = {_configuration["DeliveryURL"]}");
+
+        var response = await client.PostAsync(_configuration["DeliveryURL"], content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -78,11 +84,16 @@ public class OrderService : IOrderService
         }
     }
 
-    private const string connectionString = "Endpoint=sb://eshopfin.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=hhnS4+TiS1T19ymJjW57JjbTb9R2QZ4nd+ASbEU+6dY=";
-    private const string queueName = "shopordersbus";
+    //private const string connectionString = "Endpoint=sb://eshopfin.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=hhnS4+TiS1T19ymJjW57JjbTb9R2QZ4nd+ASbEU+6dY=";
+    //private const string queueName = "shopordersbus";
 
     async Task SendToReserveQueue(Order order)
     {
+        string connectionString = _configuration["Reserver"];
+        string queueName = _configuration["Ordersbus"];
+
+        Console.WriteLine($"ReserveQueue: {connectionString} - {queueName}");
+
         // Create a Service Bus client
         await using var client = new ServiceBusClient(connectionString);
 

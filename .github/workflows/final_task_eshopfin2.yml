@@ -1,12 +1,12 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - eshopfin2
+name: Build and deploy ASP.Net Core app to Azure Web App - eshopde3
 
 on:
   push:
     branches:
-      - final_task
+      - development
   workflow_dispatch:
 
 jobs:
@@ -24,10 +24,10 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run:  dotnet build ./eShopOnWeb.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish ./src/Web/Web.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -39,7 +39,7 @@ jobs:
     runs-on: windows-latest
     needs: build
     environment:
-      name: 'Production'
+      name: 'develop2'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
       id-token: write #This is required for requesting the JWT
@@ -54,15 +54,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_1E0523BF435E494F82E8DF3E140332EC }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_78562FDDB81B414BB5CC52F87C4C3B37 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1D52CEDC57CB40D28C9482B541506A25 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_56A26EE2DE5E49058D84719A1ECCE645 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1D71DDA6E1A94A4C95B0752B5390D619 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D694F7FF1CEB4E31A9680E9C580EB575 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'eshopfin2'
-          slot-name: 'Production'
+          app-name: 'eshopde3'
+          slot-name: 'develop2'
           package: .
           
